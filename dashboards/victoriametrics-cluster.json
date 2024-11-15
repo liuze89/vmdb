@@ -3674,12 +3674,12 @@
                 "uid": "$ds"
               },
               "exemplar": true,
-              "expr": "sum(increase(vm_metrics_with_dropped_labels_total{job=~\"$job_insert\", instance=~\"$instance\"}[$__rate_interval]))",
+              "expr": "sum(increase(vm_series_dropped_total{job=~\"$job_insert\", instance=~\"$instance\"}[$__rate_interval])) by (reason)",
               "format": "time_series",
               "hide": false,
               "interval": "",
               "intervalFactor": 1,
-              "legendFormat": "metrics with dropped labels",
+              "legendFormat": "dropped series, which a hitting {{reason}}",
               "refId": "A"
             }
           ],

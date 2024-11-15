@@ -7,12 +7,9 @@ import (
 	"net/url"
 	"path/filepath"
 	"slices"
-	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
-
-	"github.com/VictoriaMetrics/VictoriaMetrics/lib/httpserver"
 
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/auth"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/bloomfilter"
@@ -21,6 +18,7 @@ import (
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/fasttime"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/flagutil"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/fs"
+	"github.com/VictoriaMetrics/VictoriaMetrics/lib/httpserver"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/logger"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/memory"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/persistentqueue"
@@ -29,6 +27,7 @@ import (
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/promrelabel"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/promutils"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/ratelimiter"
+	storagelimits "github.com/VictoriaMetrics/VictoriaMetrics/lib/storage/limits"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/streamaggr"
 	"github.com/VictoriaMetrics/metrics"
 	"github.com/cespare/xxhash/v2"
@@ -485,6 +484,14 @@ func tryPush(at *auth.Token, wr *prompbmarshal.WriteRequest, forceDropSamplesOnF
 			rowsCountAfterRelabel := getRowsCount(tssBlock)
 			rowsDroppedByGlobalRelabel.Add(rowsCountBeforeRelabel - rowsCountAfterRelabel)
 		}
+		idxDiff := 0
+		for i, ts := range tssBlock {
+			if storagelimits.ExceedingLabels(ts.Labels) {
+				idxDiff++
+			} else if idxDiff > 0 {
+				tss[i-idxDiff] = tss[i]
+			}
+		}
 		sortLabelsIfNeeded(tssBlock)
 		tssBlock = limitSeriesCardinality(tssBlock)
 		if sas.IsEnabled() {
@@ -729,28 +736,13 @@ func logSkippedSeries(labels []prompbmarshal.Label, flagName string, flagValue i
 	select {
 	case <-logSkippedSeriesTicker.C:
 		// Do not use logger.WithThrottler() here, since this will increase CPU usage
-		// because every call to logSkippedSeries will result to a call to labelsToString.
-		logger.Warnf("skip series %s because %s=%d reached", labelsToString(labels), flagName, flagValue)
+		// because every call to logSkippedSeries will result to a call to prompbmarshal.LabelsToString.
+		logger.Warnf("skip series %s because %s=%d reached", prompbmarshal.LabelsToString(labels), flagName, flagValue)
 	default:
 	}
 }
 
 var logSkippedSeriesTicker = time.NewTicker(5 * time.Second)
-
-func labelsToString(labels []prompbmarshal.Label) string {
-	var b []byte
-	b = append(b, '{')
-	for i, label := range labels {
-		b = append(b, label.Name...)
-		b = append(b, '=')
-		b = strconv.AppendQuote(b, label.Value)
-		if i+1 < len(labels) {
-			b = append(b, ',')
-		}
-	}
-	b = append(b, '}')
-	return string(b)
-}
 
 var (
 	globalRowsPushedBeforeRelabel = metrics.NewCounter("vmagent_remotewrite_global_rows_pushed_before_relabel_total")

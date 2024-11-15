@@ -4191,12 +4191,12 @@
                 "uid": "$ds"
               },
               "exemplar": false,
-              "expr": "sum(increase(vm_metrics_with_dropped_labels_total{job=~\"$job\", instance=~\"$instance\"}[$__rate_interval])) by (instance)",
+              "expr": "sum(increase(vm_series_dropped_total{job=~\"$job\", instance=~\"$instance\"}[$__rate_interval])) by (instance, reason)",
               "format": "time_series",
               "hide": false,
               "interval": "",
               "intervalFactor": 1,
-              "legendFormat": "{{instance}} - limit exceeded",
+              "legendFormat": "{{instance}} - {{reason}}",
               "range": true,
               "refId": "A"
             }

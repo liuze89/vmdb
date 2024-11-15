@@ -120,10 +120,11 @@ groups:
             `-maxLabelValueLen` command-line flags.
 
       - alert: TooLongLabelValues
-        expr: increase(vm_too_long_label_values_total[5m]) > 0
+        expr: increase(vm_series_dropped_total{reason="too_long_label_value"}[5m]) > 0
         labels:
           severity: critical
         annotations:
+          dashboard: "http://localhost:3000/d/wNf0q_kZk?viewPanel=74&var-instance={{ $labels.instance }}"
           summary: "VictoriaMetrics truncates too long label values"
           description: | 
             The maximum length of a label value is limited via `-maxLabelValueLen` cmd-line flag. 
@@ -132,10 +133,11 @@ groups:
             either reduce the size of label values or increase `-maxLabelValueLen`.
 
       - alert: TooLongLabelNames
-        expr: increase(vm_too_long_label_names_total[5m]) > 0
+        expr: increase(vm_series_dropped_total{reason="too_long_label_name"}[5m]) > 0
         labels:
           severity: critical
         annotations:
+          dashboard: "http://localhost:3000/d/wNf0q_kZk?viewPanel=74&var-instance={{ $labels.instance }}"
           summary: "VictoriaMetrics truncates too long label names"
           description: > 
            The maximum length of a label name is limited by 256 bytes. 
