@@ -58,8 +58,8 @@ func push(ctx *common.InsertCtx, tss []prompbmarshal.TimeSeries) {
 			ctx.AddLabel(label.Name, label.Value)
 		}
 		ctx.ApplyRelabeling()
-		if len(ctx.Labels) == 0 {
-			// Skip metric without labels.
+		if ctx.AreLabelsInvalid() {
+			// Skip metric with invalid labels.
 			continue
 		}
 		ctx.SortLabelsIfNeeded()

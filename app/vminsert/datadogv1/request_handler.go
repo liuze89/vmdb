@@ -66,8 +66,8 @@ func insertRows(series []datadogv1.Series, extraLabels []prompbmarshal.Label) er
 		if hasRelabeling {
 			ctx.ApplyRelabeling()
 		}
-		if len(ctx.Labels) == 0 {
-			// Skip metric without labels.
+		if ctx.AreLabelsInvalid() {
+			// Skip metric with invalid labels.
 			continue
 		}
 		ctx.SortLabelsIfNeeded()

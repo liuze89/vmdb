@@ -61,8 +61,8 @@ func insertRows(rows []newrelic.Row, extraLabels []prompbmarshal.Label) error {
 			if hasRelabeling {
 				ctx.ApplyRelabeling()
 			}
-			if len(ctx.Labels) == 0 {
-				// Skip metric without labels.
+			if ctx.AreLabelsInvalid() {
+				// Skip metric with invalid labels.
 				continue
 			}
 			ctx.SortLabelsIfNeeded()

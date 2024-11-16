@@ -484,13 +484,15 @@ func tryPush(at *auth.Token, wr *prompbmarshal.WriteRequest, forceDropSamplesOnF
 			rowsCountAfterRelabel := getRowsCount(tssBlock)
 			rowsDroppedByGlobalRelabel.Add(rowsCountBeforeRelabel - rowsCountAfterRelabel)
 		}
-		idxDiff := 0
-		for i, ts := range tssBlock {
+		tssBlockTmp := tssBlock[:0]
+		for _, ts := range tssBlock {
 			if storagelimits.ExceedingLabels(ts.Labels) {
-				idxDiff++
-			} else if idxDiff > 0 {
-				tss[i-idxDiff] = tss[i]
+				tssBlockTmp = append(tssBlockTmp, ts)
 			}
+		}
+		tssBlock = tssBlockTmp
+		if len(tssBlock) == 0 {
+			continue
 		}
 		sortLabelsIfNeeded(tssBlock)
 		tssBlock = limitSeriesCardinality(tssBlock)

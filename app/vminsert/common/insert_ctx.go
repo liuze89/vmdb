@@ -62,9 +62,6 @@ func (ctx *InsertCtx) marshalMetricNameRaw(prefix []byte, labels []prompbmarshal
 
 // WriteDataPoint writes (timestamp, value) with the given prefix and labels into ctx buffer.
 func (ctx *InsertCtx) WriteDataPoint(prefix []byte, labels []prompbmarshal.Label, timestamp int64, value float64) error {
-	if storagelimits.ExceedingLabels(labels) {
-		return nil
-	}
 	metricNameRaw := ctx.marshalMetricNameRaw(prefix, labels)
 	return ctx.addRow(metricNameRaw, timestamp, value)
 }
@@ -73,9 +70,6 @@ func (ctx *InsertCtx) WriteDataPoint(prefix []byte, labels []prompbmarshal.Label
 //
 // It returns metricNameRaw for the given labels if len(metricNameRaw) == 0.
 func (ctx *InsertCtx) WriteDataPointExt(metricNameRaw []byte, labels []prompbmarshal.Label, timestamp int64, value float64) ([]byte, error) {
-	if storagelimits.ExceedingLabels(labels) {
-		return metricNameRaw, nil
-	}
 	if len(metricNameRaw) == 0 {
 		metricNameRaw = ctx.marshalMetricNameRaw(nil, labels)
 	}
@@ -142,6 +136,11 @@ func (ctx *InsertCtx) AddLabel(name, value string) {
 // ApplyRelabeling applies relabeling to ic.Labels.
 func (ctx *InsertCtx) ApplyRelabeling() {
 	ctx.Labels = ctx.relabelCtx.ApplyRelabeling(ctx.Labels)
+}
+
+// AreLabelsInvalid checks if labels are passing validation
+func (ctx *InsertCtx) AreLabelsInvalid() bool {
+	return len(ctx.Labels) == 0 || storagelimits.ExceedingLabels(ctx.Labels)
 }
 
 // FlushBufs flushes buffered rows to the underlying storage.

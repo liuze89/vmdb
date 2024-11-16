@@ -61,8 +61,8 @@ func insertRows(rows []parser.Row, extraLabels []prompbmarshal.Label) error {
 		if hasRelabeling {
 			ic.ApplyRelabeling()
 		}
-		if len(ic.Labels) == 0 {
-			// Skip metric without labels.
+		if ic.AreLabelsInvalid() {
+			// Skip metric with invalid labels.
 			continue
 		}
 		ic.SortLabelsIfNeeded()
