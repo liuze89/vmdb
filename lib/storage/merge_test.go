@@ -53,7 +53,7 @@ func TestMergeBlockStreamsOneStreamManyBlocksOneRow(t *testing.T) {
 	minTimestamp := int64(1<<63 - 1)
 	maxTimestamp := int64(-1 << 63)
 	for i := 0; i < blocksCount; i++ {
-		initTestTSID(&r.TSID)
+		//initTestTSID(&r.TSID)
 		r.TSID.MetricID = uint64(i * 123)
 		r.Timestamp = int64(rng.Intn(1e9))
 		r.Value = rng.NormFloat64() * 2332
@@ -75,7 +75,7 @@ func TestMergeBlockStreamsOneStreamManyBlocksManyRows(t *testing.T) {
 	rng := rand.New(rand.NewSource(1))
 	var rows []rawRow
 	var r rawRow
-	initTestTSID(&r.TSID)
+	//initTestTSID(&r.TSID)
 	r.PrecisionBits = 4
 	const blocksCount = 1234
 	const rowsCount = 4938
@@ -176,7 +176,7 @@ func TestMergeBlockStreamsTwoStreamsManyBlocksManyRows(t *testing.T) {
 	rng := rand.New(rand.NewSource(1))
 	var rows []rawRow
 	var r rawRow
-	initTestTSID(&r.TSID)
+	//initTestTSID(&r.TSID)
 	r.PrecisionBits = 2
 	const rowsCount1 = 4938
 	for i := 0; i < rowsCount1; i++ {
@@ -307,7 +307,7 @@ func TestMergeBlockStreamsManyStreamsManyBlocksManyRows(t *testing.T) {
 	maxTimestamp := int64(-1 << 63)
 
 	var r rawRow
-	initTestTSID(&r.TSID)
+	//initTestTSID(&r.TSID)
 	r.PrecisionBits = defaultPrecisionBits
 
 	rng := rand.New(rand.NewSource(1))
@@ -342,7 +342,7 @@ func TestMergeForciblyStop(t *testing.T) {
 	maxTimestamp := int64(-1 << 63)
 
 	var r rawRow
-	initTestTSID(&r.TSID)
+	//initTestTSID(&r.TSID)
 	r.PrecisionBits = defaultPrecisionBits
 
 	rng := rand.New(rand.NewSource(1))

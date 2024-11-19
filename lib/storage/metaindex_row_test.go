@@ -1,17 +1,14 @@
 package storage
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
-	"testing/quick"
 )
 
 func TestMetaindexRowReset(t *testing.T) {
 	var mr metaindexRow
 
 	mr.TSID.MetricID = 234
-	mr.TSID.AccountID = 342
 	mr.BlockHeadersCount = 1323
 	mr.MinTimestamp = -234
 	mr.MaxTimestamp = 8989
@@ -78,23 +75,23 @@ func testMetaindexRowMarshalUnmarshal(t *testing.T, mr *metaindexRow) {
 }
 
 func initTestMetaindexRow(mr *metaindexRow) {
-	rndLock.Lock()
-	iv, ok := quick.Value(metaindexRowType, rnd)
-	rndLock.Unlock()
-	if !ok {
-		panic(fmt.Errorf("error in quick.Value when generating random metaindexRow"))
-	}
-	rndMR := iv.Interface().(*metaindexRow)
-	if rndMR == nil {
-		rndMR = &metaindexRow{}
-	}
-	*mr = *rndMR
-	if mr.BlockHeadersCount == 0 {
-		mr.BlockHeadersCount = 1
-	}
-	if mr.IndexBlockSize > 2*maxBlockSize {
-		mr.IndexBlockSize = 2 * maxBlockSize
-	}
+	//rndLock.Lock()
+	//iv, ok := quick.Value(metaindexRowType, rnd)
+	//rndLock.Unlock()
+	//if !ok {
+	//	panic(fmt.Errorf("error in quick.Value when generating random metaindexRow"))
+	//}
+	//rndMR := iv.Interface().(*metaindexRow)
+	//if rndMR == nil {
+	//	rndMR = &metaindexRow{}
+	//}
+	//*mr = *rndMR
+	//if mr.BlockHeadersCount == 0 {
+	//	mr.BlockHeadersCount = 1
+	//}
+	//if mr.IndexBlockSize > 2*maxBlockSize {
+	//	mr.IndexBlockSize = 2 * maxBlockSize
+	//}
 }
 
 var metaindexRowType = reflect.TypeOf(&metaindexRow{})

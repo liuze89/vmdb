@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"fmt"
 	"testing"
 	"time"
 )
@@ -9,6 +10,11 @@ func TestTimeRangeFromPartition(t *testing.T) {
 	for i := 0; i < 24*30*365; i++ {
 		testTimeRangeFromPartition(t, time.Now().Add(time.Hour*time.Duration(i)))
 	}
+}
+
+func Test_timestampToTime(t *testing.T) {
+	now := timestampToTime(time.Now().UnixNano())
+	fmt.Println(now)
 }
 
 func testTimeRangeFromPartition(t *testing.T, initialTime time.Time) {

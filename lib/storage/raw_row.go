@@ -60,20 +60,8 @@ func (rrs *rawRowsSort) Less(i, j int) bool {
 	tb := &b.TSID
 
 	// Manually inline TSID.Less here, since the compiler doesn't inline it yet :(
-	if ta.AccountID != tb.AccountID {
-		return ta.AccountID < tb.AccountID
-	}
-	if ta.ProjectID != tb.ProjectID {
-		return ta.ProjectID < tb.ProjectID
-	}
 	if ta.MetricGroupID != tb.MetricGroupID {
 		return ta.MetricGroupID < tb.MetricGroupID
-	}
-	if ta.JobID != tb.JobID {
-		return ta.JobID < tb.JobID
-	}
-	if ta.InstanceID != tb.InstanceID {
-		return ta.InstanceID < tb.InstanceID
 	}
 	if ta.MetricID != tb.MetricID {
 		return ta.MetricID < tb.MetricID

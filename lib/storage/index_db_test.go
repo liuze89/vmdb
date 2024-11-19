@@ -699,12 +699,6 @@ func testIndexDBGetOrCreateTSIDByName(db *indexDB, accountsCount, projectsCount,
 			generateTSID(&genTSID.TSID, &mn)
 			createAllIndexesForMetricName(is, &mn, &genTSID.TSID, date)
 		}
-		if genTSID.TSID.AccountID != mn.AccountID {
-			return nil, nil, nil, fmt.Errorf("unexpected TSID.AccountID; got %d; want %d; mn:\n%s\ntsid:\n%+v", genTSID.TSID.AccountID, mn.AccountID, &mn, &genTSID.TSID)
-		}
-		if genTSID.TSID.ProjectID != mn.ProjectID {
-			return nil, nil, nil, fmt.Errorf("unexpected TSID.ProjectID; got %d; want %d; mn:\n%s\ntsid:\n%+v", genTSID.TSID.ProjectID, mn.ProjectID, &mn, &genTSID.TSID)
-		}
 
 		mns = append(mns, mn)
 		tsids = append(tsids, genTSID.TSID)
@@ -741,10 +735,7 @@ func testIndexDBCheckTSIDByName(db *indexDB, mns []MetricName, tsids []TSID, ten
 		mn := &mns[i]
 		tsid := &tsids[i]
 
-		apKey := accountProjectKey{
-			AccountID: tsid.AccountID,
-			ProjectID: tsid.ProjectID,
-		}
+		apKey := accountProjectKey{}
 		tc := timeseriesCounters[apKey]
 		if tc == nil {
 			tc = make(map[uint64]bool)
@@ -772,7 +763,7 @@ func testIndexDBCheckTSIDByName(db *indexDB, mns []MetricName, tsids []TSID, ten
 
 		// Search for metric name for the given metricID.
 		var ok bool
-		metricNameCopy, ok = db.searchMetricNameWithCache(metricNameCopy[:0], genTSID.TSID.MetricID, genTSID.TSID.AccountID, genTSID.TSID.ProjectID)
+		metricNameCopy, ok = db.searchMetricNameWithCache(metricNameCopy[:0], genTSID.TSID.MetricID, 0, 0)
 		if !ok {
 			return fmt.Errorf("cannot find metricName for metricID=%d; i=%d", genTSID.TSID.MetricID, i)
 		}
@@ -1749,12 +1740,6 @@ func TestSearchTSIDWithTimeRange(t *testing.T) {
 				generateTSID(&genTSID.TSID, &mn)
 				createAllIndexesForMetricName(is, &mn, &genTSID.TSID, date)
 			}
-			if genTSID.TSID.AccountID != accountID {
-				t.Fatalf("unexpected accountID; got %d; want %d", genTSID.TSID.AccountID, accountID)
-			}
-			if genTSID.TSID.ProjectID != projectID {
-				t.Fatalf("unexpected accountID; got %d; want %d", genTSID.TSID.ProjectID, projectID)
-			}
 			metricIDs.Add(genTSID.TSID.MetricID)
 		}
 
@@ -2270,7 +2255,8 @@ func TestSearchContainsTimeRange(t *testing.T) {
 		date := rotationDate - uint64(day)
 
 		var metricIDs uint64set.Set
-		for metric := range metricsPerDay {
+		for metric := 0; metric < metricsPerDay; metric++ {
+			//for metric := range metricsPerDay {
 			mn := newMN("testMetric", day, metric)
 			metricNameBuf = mn.Marshal(metricNameBuf[:0])
 			var genTSID generationTSID
@@ -2292,7 +2278,8 @@ func TestSearchContainsTimeRange(t *testing.T) {
 		// ingestion day must be outside of tenant 0:0 data ingestion
 		date := rotationDate - uint64(tenant2IngestionDay)
 
-		for metric := range metricsPerDay {
+		for metric := 0; metric < metricsPerDay; metric++ {
+			//for metric := range metricsPerDay {
 			mn := newMN("testMetric2", tenant2IngestionDay, metric)
 			mn.AccountID = 1
 			mn.ProjectID = 1

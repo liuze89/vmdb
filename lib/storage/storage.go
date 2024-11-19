@@ -1833,7 +1833,7 @@ func (s *Storage) RegisterMetricNames(qt *querytracer.Tracer, mrs []MetricRow) {
 				s.putSeriesToCache(mr.MetricNameRaw, &genTSID, date)
 				seriesRepopulated++
 			} else if !s.dateMetricIDCache.Has(generation, date, genTSID.TSID.MetricID) {
-				if !is.hasDateMetricIDNoExtDB(date, genTSID.TSID.MetricID, genTSID.TSID.AccountID, genTSID.TSID.ProjectID) {
+				if !is.hasDateMetricIDNoExtDB(date, genTSID.TSID.MetricID, 0, 0) {
 					if err := mn.UnmarshalRaw(mr.MetricNameRaw); err != nil {
 						if firstWarn == nil {
 							firstWarn = fmt.Errorf("cannot unmarshal MetricNameRaw %q: %w", mr.MetricNameRaw, err)
@@ -2213,7 +2213,7 @@ func (s *Storage) prefillNextIndexDB(rows []rawRow, mrs []*MetricRow) error {
 		}
 
 		// Check whether the given (date, metricID) is already present in idbNext.
-		if isNext.hasDateMetricIDNoExtDB(date, metricID, r.TSID.AccountID, r.TSID.ProjectID) {
+		if isNext.hasDateMetricIDNoExtDB(date, metricID, 0, 0) {
 			// Indexes are already pre-filled at idbNext.
 			//
 			// Register the (generation, date, metricID) entry in the cache,
@@ -2312,9 +2312,7 @@ func (s *Storage) updatePerDateData(rows []rawRow, mrs []*MetricRow) error {
 				continue
 			}
 			e := pendingHourMetricIDEntry{
-				AccountID: r.TSID.AccountID,
-				ProjectID: r.TSID.ProjectID,
-				MetricID:  metricID,
+				MetricID: metricID,
 			}
 			pendingHourEntries = append(pendingHourEntries, e)
 			if date == hmPrevDate && hmPrev.m.Has(metricID) {
@@ -2356,12 +2354,6 @@ func (s *Storage) updatePerDateData(rows []rawRow, mrs []*MetricRow) error {
 	sort.Slice(pendingDateMetricIDs, func(i, j int) bool {
 		a := pendingDateMetricIDs[i]
 		b := pendingDateMetricIDs[j]
-		if a.tsid.AccountID != b.tsid.AccountID {
-			return a.tsid.AccountID < b.tsid.AccountID
-		}
-		if a.tsid.ProjectID != b.tsid.ProjectID {
-			return a.tsid.ProjectID < b.tsid.ProjectID
-		}
 		if a.date != b.date {
 			return a.date < b.date
 		}
@@ -2377,7 +2369,7 @@ func (s *Storage) updatePerDateData(rows []rawRow, mrs []*MetricRow) error {
 	for _, dmid := range pendingDateMetricIDs {
 		date := dmid.date
 		metricID := dmid.tsid.MetricID
-		if !is.hasDateMetricIDNoExtDB(date, metricID, dmid.tsid.AccountID, dmid.tsid.ProjectID) {
+		if !is.hasDateMetricIDNoExtDB(date, metricID, 0, 0) {
 			// The (date, metricID) entry is missing in the indexDB. Add it there together with per-day indexes.
 			// It is OK if the (date, metricID) entry is added multiple times to indexdb
 			// by concurrent goroutines.

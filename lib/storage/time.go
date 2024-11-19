@@ -13,21 +13,14 @@ func dateToString(date uint64) string {
 	return t.Format("2006-01-02")
 }
 
-// timestampToTime returns time representation of the given timestamp.
-//
-// The returned time is in UTC timezone.
 func timestampToTime(timestamp int64) time.Time {
-	return time.Unix(timestamp/1e3, (timestamp%1e3)*1e6).UTC()
+	return time.Unix(timestamp/1e9, timestamp%1e9).UTC()
 }
 
-// timestampFromTime returns timestamp value for the given time.
 func timestampFromTime(t time.Time) int64 {
-	// There is no need in converting t to UTC, since UnixNano must
-	// return the same value for any timezone.
-	return t.UnixNano() / 1e6
+	return t.UnixNano()
 }
 
-// TimeRange is time range.
 type TimeRange struct {
 	MinTimestamp int64
 	MaxTimestamp int64
@@ -39,19 +32,16 @@ func (tr *TimeRange) String() string {
 	return fmt.Sprintf("[%s..%s]", start, end)
 }
 
-// TimestampToHumanReadableFormat converts the given timestamp to human-readable format.
 func TimestampToHumanReadableFormat(timestamp int64) string {
 	t := timestampToTime(timestamp).UTC()
 	return t.Format("2006-01-02T15:04:05.999Z")
 }
 
-// timestampToPartitionName returns partition name for the given timestamp.
 func timestampToPartitionName(timestamp int64) string {
 	t := timestampToTime(timestamp)
 	return t.Format("2006_01")
 }
 
-// fromPartitionName initializes tr from the given partition name.
 func (tr *TimeRange) fromPartitionName(name string) error {
 	t, err := time.Parse("2006_01", name)
 	if err != nil {
@@ -61,13 +51,11 @@ func (tr *TimeRange) fromPartitionName(name string) error {
 	return nil
 }
 
-// fromPartitionTimestamp initializes tr from the given partition timestamp.
 func (tr *TimeRange) fromPartitionTimestamp(timestamp int64) {
 	t := timestampToTime(timestamp)
 	tr.fromPartitionTime(t)
 }
 
-// fromPartitionTime initializes tr from the given partition time t.
 func (tr *TimeRange) fromPartitionTime(t time.Time) {
 	y, m, _ := t.UTC().Date()
 	minTime := time.Date(y, m, 1, 0, 0, 0, 0, time.UTC)
